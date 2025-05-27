@@ -26,11 +26,10 @@ function initMap() {
 
 	drawingManager.setMap(gmap);
 
-	google.maps.event.addListenerOnce(drawingManager, 'overlaycomplete', function(event) {
+	google.maps.event.addListener(drawingManager, 'overlaycomplete', function(event) {
 		console.log('Overlay completed:', event);
 		alert('Shape drawn on map!');
 	});
-
 
 	return;
 }
