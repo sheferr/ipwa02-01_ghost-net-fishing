@@ -2,10 +2,11 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:p="http://primefaces.org/ui">
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://xmlns.jcp.org/jsf/core">
 
 <script defer="defer"
-	src="https://maps.google.com/maps/api/js?key=AIzaSyCCEMSXGvn6rWirROdD0H-4gfuOZqKGB0k&amp;libraries=drawing&amp;callback=initMap"></script>
+	src="https://maps.google.com/maps/api/js?key=&amp;libraries=drawing&amp;callback=initMap"></script>
 <h:head>
 	<title>Ghost-Net-Fishing</title>
 
@@ -40,14 +41,48 @@
 					</h:panelGrid>
 				</p:tab>
 			</p:accordionPanel>
+
 		</p:splitterPanel>
 
+
 		<p:splitterPanel minSize="80" size="80">
-			<p:gmap widgetVar="myMap" disableDefaultUI="true" center="41.381542, 2.122893" zoom="15"
-				type="HYBRID" style="width: 100%; height: 100%;" />
+			<p:growl id="messages" showDetail="true" life="2000" />
+
+			<h:form>
+				<p:remoteCommand name="callOnStateChange" update="shapeDialog"
+					action="#{fishingNet.readCurrentValues}"
+					oncomplete="PF('newNetEntry').show()">
+					<f:param name="shapeType" />
+					<f:param name="centerLat" />
+					<f:param name="centerLng" />
+					<f:param name="radius" />
+				</p:remoteCommand>
+			</h:form>
+
+			<p:gmap widgetVar="myMap" disableDefaultUI="true"
+				center="41.381542, 2.122893" zoom="15" type="HYBRID"
+				style="width: 100%; height: 100%;">
+				<p:ajax event="stateChange" listener="#{eventView.onStateChange}"
+					update="messages" />
+			</p:gmap>
+
+			<p:dialog header="Neuer Eintrag" widgetVar="newNetEntry"
+				id="shapeDialog" modal="true" closeOnEscape="true" resizeable="true">
+				<h:panelGrid columns="2" cellpadding="5">
+					<h:outputText value="Breitengrad " />
+					<p:inputText value="#{fishingNet.longitude}" />
+					<h:outputText value="Längengrad " />
+					<p:inputText value="#{fishingNet.latitude}" />
+					<h:outputText value="Radius (km²)" />
+					<p:inputText value="#{fishingNet.area}" />
+				</h:panelGrid>
+				<p:commandButton value="Speichern" icon="pi pi-save"
+					styleClass="ui-button-raised ui-button-secondary" />
+			</p:dialog>
+
 		</p:splitterPanel>
-		
+
 	</p:splitter>
-	
+
 </h:body>
 </html>

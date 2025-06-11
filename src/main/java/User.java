@@ -14,7 +14,7 @@ public class User
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private int ID;
 	private String name;
-	private String mobile;
+	private String mobile_number;
 	
 	public User()
 	{		
@@ -30,14 +30,14 @@ public class User
 		return this.name;
 	}
 	
-	public void setMobile(String mobile)
+	public void setMobile(String number)
 	{
-		this.mobile = mobile;
+		this.mobile_number = number;
 	}
 	
 	public String getMobile()
 	{
-		return this.mobile;
+		return this.mobile_number;
 	}
 	
 }

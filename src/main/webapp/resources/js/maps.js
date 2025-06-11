@@ -14,7 +14,7 @@ function initMap() {
 
 	var gmap = PF('myMap').getMap();
 	var drawingManager = new google.maps.drawing.DrawingManager({
-		drawingMode: google.maps.drawing.OverlayType.MARKER,
+		drawingMode: null,
 		drawingControl: true,
 		drawingControlOptions: {
 			position: google.maps.ControlPosition.TOP_CENTER,
@@ -28,8 +28,27 @@ function initMap() {
 
 	google.maps.event.addListener(drawingManager, 'overlaycomplete', function(event) {
 		console.log('Overlay completed:', event);
-		alert('Shape drawn on map!');
+		
+		let shapeType = event.type; // e.g., "circle"
+		let center = event.overlay.getCenter ? event.overlay.getCenter() : null;
+		let radius = event.overlay.radius ? event.overlay.getRadius() : null;
+		
+		if (center) {
+		callOnStateChange([
+			{ name: 'shapeType', value: shapeType },
+			{ name: 'centerLat', value: center.lat() },
+			{ name: 'centerLng', value: center.lng() },
+			{ name: 'radius', value: radius }
+		]);
+		} else {
+			callOnStateChange([
+				{ name: 'shapeType', value: shapeType }
+			]);
+		}
+		
 	});
+	
+	
 
 	return;
 }
