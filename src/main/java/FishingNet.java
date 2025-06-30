@@ -32,7 +32,6 @@ public class FishingNet implements Serializable {
 
 	public void setLongitude(Double lng) {
 		this.longitude = lng;
-		System.out.println("Set new longitude: " + lng);
 	}
 
 	public Double getLongitude() {
@@ -41,7 +40,6 @@ public class FishingNet implements Serializable {
 
 	public void setLatitude(Double lat) {
 		this.latitude = lat;
-		System.out.println("Set new latitude: " + lat);
 	}
 
 	public Double getLatitude() {
@@ -70,13 +68,11 @@ public class FishingNet implements Serializable {
 
 	public void setRadius(Double radius) {
 		this.radius = radius;
-		System.out.println("Set new radius: " + radius);
 	}
 	
 	public void setArea(Double area)
 	{
 		this.radius = Math.sqrt((area * 1_000_000)/Math.PI);
-		System.out.println("New Radius is set: " + this.radius);
 	}
 	
 	public Double getArea() {
