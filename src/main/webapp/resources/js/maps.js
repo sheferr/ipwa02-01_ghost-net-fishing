@@ -27,28 +27,34 @@ function initMap() {
 	drawingManager.setMap(gmap);
 
 	google.maps.event.addListener(drawingManager, 'overlaycomplete', function(event) {
+
 		console.log('Overlay completed:', event);
-		
 		let shapeType = event.type; // e.g., "circle"
 		let center = event.overlay.getCenter ? event.overlay.getCenter() : null;
 		let radius = event.overlay.radius ? event.overlay.getRadius() : null;
-		
+
+		if (shapeType === 'circle') {
+			event.overlay.setOptions({
+				fillColor: '#fae275',
+				fillOpacity: 0.4,
+				strokeColor: '#bfad58',
+				strokeWeight: 2
+			});
+		}
+
 		if (center) {
-		callOnStateChange([
-			{ name: 'shapeType', value: shapeType },
-			{ name: 'centerLat', value: center.lat() },
-			{ name: 'centerLng', value: center.lng() },
-			{ name: 'radius', value: radius }
-		]);
+			callOnStateChange([
+				{ name: 'shapeType', value: shapeType },
+				{ name: 'centerLat', value: center.lat() },
+				{ name: 'centerLng', value: center.lng() },
+				{ name: 'radius', value: radius }
+			]);
 		} else {
 			callOnStateChange([
 				{ name: 'shapeType', value: shapeType }
 			]);
 		}
-		
 	});
-	
-	
 
 	return;
 }

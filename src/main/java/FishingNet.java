@@ -1,3 +1,4 @@
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Map;
 import jakarta.enterprise.context.RequestScoped;
@@ -6,9 +7,8 @@ import jakarta.inject.Named;
 import jakarta.persistence.*;
 
 @Entity
-@Named
 @RequestScoped
-public class FishingNet {
+public class FishingNet implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int ID;
@@ -32,6 +32,7 @@ public class FishingNet {
 
 	public void setLongitude(Double lng) {
 		this.longitude = lng;
+		System.out.println("Set new longitude: " + lng);
 	}
 
 	public Double getLongitude() {
@@ -40,6 +41,7 @@ public class FishingNet {
 
 	public void setLatitude(Double lat) {
 		this.latitude = lat;
+		System.out.println("Set new latitude: " + lat);
 	}
 
 	public Double getLatitude() {
@@ -68,30 +70,21 @@ public class FishingNet {
 
 	public void setRadius(Double radius) {
 		this.radius = radius;
+		System.out.println("Set new radius: " + radius);
 	}
-
+	
+	public void setArea(Double area)
+	{
+		this.radius = Math.sqrt((area * 1_000_000)/Math.PI);
+		System.out.println("New Radius is set: " + this.radius);
+	}
+	
 	public Double getArea() {
 		return (Math.PI * this.radius * this.radius) / 1_000_000;
 	}
-
-	public void readCurrentValues() {
-		Map<String, String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
-		String shapeType = params.get("shapeType");
-
-		if (!shapeType.equals("circle")) {
-			System.out.println("Wrong type " + shapeType);
-			return;
-		}
-
-		this.latitude = Double.parseDouble(params.get("centerLat"));
-		this.setLongitude(Double.parseDouble(params.get("centerLng")));
-		this.longitude = Double.parseDouble(params.get("centerLng"));
-		this.radius = Double.parseDouble(params.get("radius"));
-
-		this.status = NetStatus.REPORTED;
-		this.created = LocalDate.now();
-
-		System.out.println("JavaScript hat ein Shape gezeichnet:");
-		System.out.println("Typ: " + shapeType + ", Lat: " + latitude + ", Lng: " + longitude + " radius: " + radius);
-	}
+	
+	public int getId()
+	{
+		return ID;
+	}	
 }

@@ -50,34 +50,57 @@
 
 			<h:form>
 				<p:remoteCommand name="callOnStateChange" update="shapeDialog"
-					action="#{fishingNet.readCurrentValues}"
-					oncomplete="PF('newNetEntry').show()">
+					action="#{fishingNetController.onAddingNewCircle}"
+					oncomplete="PF('shapeDialogWid').show()">
 					<f:param name="shapeType" />
 					<f:param name="centerLat" />
 					<f:param name="centerLng" />
 					<f:param name="radius" />
 				</p:remoteCommand>
 			</h:form>
-
-			<p:gmap widgetVar="myMap" disableDefaultUI="true"
+			<p:gmap widgetVar="myMap" id="maps" disableDefaultUI="true"
 				center="41.381542, 2.122893" zoom="15" type="HYBRID"
-				style="width: 100%; height: 100%;">
+				style="width: 100%; height: 100%;"
+				model="#{fishingNetController.circleModel}">
 				<p:ajax event="stateChange" listener="#{eventView.onStateChange}"
 					update="messages" />
+				<p:ajax event="overlaySelect"
+					listener="#{fishingNetController.circleSelected}" update="messages" />
 			</p:gmap>
 
-			<p:dialog header="Neuer Eintrag" widgetVar="newNetEntry"
-				id="shapeDialog" modal="true" closeOnEscape="true" resizeable="true">
+			<p:dialog header="Neuer Eintrag" widgetVar="shapeDialogWid"
+				id="shapeDialog" modal="true" closeOnEscape="true" resizeable="true"
+				onHide="console.log('loeschen!!')">
 				<h:panelGrid columns="2" cellpadding="5">
-					<h:outputText value="Breitengrad " />
-					<p:inputText value="#{fishingNet.longitude}" />
-					<h:outputText value="Längengrad " />
-					<p:inputText value="#{fishingNet.latitude}" />
-					<h:outputText value="Radius (km²)" />
-					<p:inputText value="#{fishingNet.area}" />
+					<h:form id="form">
+						<h:outputText value="Breitengrad " />
+						<p:inputText value="#{fishingNetController.fishingNet.longitude}">
+							<p:ajax event="blur"
+								listener="#{fishingNetController.onBlurAction}" process="@this"
+								update="@none" />
+						</p:inputText>
+						<h:outputText value="Längengrad " />
+						<p:inputText value="#{fishingNetController.fishingNet.latitude}"
+							required="true">
+							<p:ajax event="blur"
+								listener="#{fishingNetController.onBlurAction}" process="@this"
+								update="@none" />
+						</p:inputText>
+						<h:outputText value="Radius (km²)" />
+						<p:inputText value="#{fishingNetController.fishingNet.area}"
+							required="true">
+							<p:ajax event="blur"
+								listener="#{fishingNetController.onBlurAction}" process="@this"
+								update="@none" />
+						</p:inputText>
+					</h:form>
 				</h:panelGrid>
-				<p:commandButton value="Speichern" icon="pi pi-save"
-					styleClass="ui-button-raised ui-button-secondary" />
+				<p:commandButton value="Speichern"
+					action="#{fishingNetController.saveNewFishingNet}"
+					icon="pi pi-save" styleClass="ui-button-raised ui-button-secondary"
+					oncomplete="PF('shapeDialogWid').hide()">
+
+				</p:commandButton>
 			</p:dialog>
 
 		</p:splitterPanel>

@@ -10,7 +10,6 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import jakarta.persistence.*;
 
-@Entity
 @Named
 @ViewScoped
 public class EventView implements Serializable {

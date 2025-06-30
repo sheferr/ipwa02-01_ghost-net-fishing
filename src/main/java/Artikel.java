@@ -2,9 +2,6 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Named;
 import jakarta.persistence.*;
 
-@Entity
-@Named
-@RequestScoped
 public class Artikel
 {
 	@Id

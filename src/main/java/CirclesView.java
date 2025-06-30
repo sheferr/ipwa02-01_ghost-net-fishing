@@ -10,8 +10,6 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import jakarta.persistence.*;
 
-@Named
-@ViewScoped
 public class CirclesView implements Serializable {
 
     private MapModel<Long> circleModel;
