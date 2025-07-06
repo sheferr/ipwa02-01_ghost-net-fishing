@@ -7,10 +7,9 @@ import jakarta.inject.Named;
 import jakarta.persistence.*;
 
 @Entity
-@RequestScoped
 public class FishingNet implements Serializable {
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int ID;
 	private Double longitude;
 	private Double latitude;

@@ -1,14 +1,19 @@
+import java.util.List;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ConversationScoped;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
 
 @Named
-@ApplicationScoped
+@RequestScoped
+//@Dependent
 public class NetDataBase {
 	EntityManager entityManager;
 
@@ -43,6 +48,11 @@ public class NetDataBase {
 	
 	public void add(FishingNet net) {
 		entityManager.persist(net);
+	}
+	
+	public List<FishingNet> getAllFishingNet()
+	{
+		return entityManager.createQuery("SELECT f FROM FishingNet f", FishingNet.class).getResultList();
 	}
 	
 	public static void main(String[] args) {
