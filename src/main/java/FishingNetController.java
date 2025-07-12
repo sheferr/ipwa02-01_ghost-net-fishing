@@ -6,8 +6,10 @@ import java.util.Map;
 import java.util.function.IntToLongFunction;
 import java.util.function.LongToIntFunction;
 import java.util.function.ToLongFunction;
+import java.util.stream.Collectors;
 
 import org.primefaces.PrimeFaces;
+import org.primefaces.event.SelectEvent;
 import org.primefaces.event.map.OverlaySelectEvent;
 import org.primefaces.event.map.StateChangeEvent;
 import org.primefaces.model.map.*;
@@ -35,11 +37,22 @@ public class FishingNetController implements Serializable {
 
 	private FishingNet fishingNet = new FishingNet();
 	private List<FishingNet> fishingNetList = new ArrayList<>();
+	private FishingNet selectedNet;
+	
+	private static final List<String> CONTINENTS = List.of(
+            "Nordamerika",
+            "Suedamerika",
+            "Europa",
+            "Afrika",
+            "Asien",
+            "Australien",
+            "Antarktis");
 
 	@PostConstruct
 	public void init() {
 		fishingNetList = fishingNetDatabase.getAllFishingNet();
 		System.out.println("Eingelesene Fischernetze: " + fishingNetList.size());
+		System.out.println("size of continent list: " + CONTINENTS.size());
 
 		for (FishingNet net : fishingNetList) {
 			System.out.println("Adding net to view..");
@@ -58,6 +71,49 @@ public class FishingNetController implements Serializable {
 	public CirclesView getCirclesView() {
 		return circlesView;
 	}
+
+	public List<FishingNet> getFishingNetList() {
+		return fishingNetList;
+	}
+
+	public FishingNet getSelectedNet() {
+		return selectedNet;
+	}
+
+	public void setSelectedNet(FishingNet selectedNet) {
+		this.selectedNet = selectedNet;
+	}
+	public List<String> getContinents() {
+        return CONTINENTS;
+}
+	
+	public List<FishingNet> getFishingNetsByContinent(String continent) {
+        return fishingNetList.stream()
+                        .filter(n -> continent.equals(determineContinent(n.getLatitude(), n.getLongitude())))
+                        .collect(Collectors.toList());
+}
+	
+	private String determineContinent(double lat, double lng) {
+        if (lat < -60) {
+                return "Antarktis";
+        }
+        if (lat >= 15 && lat <= 75 && lng >= -170 && lng <= -50) {
+                return "Nordamerika";
+        }
+        if (lat >= -60 && lat < 15 && lng >= -90 && lng <= -30) {
+                return "Suedamerika";
+        }
+        if (lat >= 35 && lat <= 72 && lng >= -10 && lng <= 60) {
+                return "Europa";
+        }
+        if (lat >= -35 && lat <= 35 && lng >= -20 && lng <= 55) {
+                return "Afrika";
+        }
+        if (lat >= -10 && lat <= 55 && lng > 55 && lng <= 180) {
+                return "Asien";
+        }
+        return "Australien";
+}
 
 	public void onAddingNewCircle() {
 		Map<String, String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
@@ -98,10 +154,15 @@ public class FishingNetController implements Serializable {
 	public void circleSelected(OverlaySelectEvent<Long> event) {
 		try {
 			Circle<Long> overlay = (Circle<Long>) event.getOverlay();
-			System.out.println("Overlay selected: " + overlay);
 			if (overlay != null) {
-				FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,
-						"Circle " + overlay.getData() + " Selected", null));
+				for(FishingNet net : fishingNetList)
+				{
+					if (Long.valueOf(net.getId()) == overlay.getData())
+					{
+						selectedNet = net;
+						break;
+					}
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
