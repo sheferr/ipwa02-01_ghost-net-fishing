@@ -1,0 +1,8 @@
+.no-padding .ui-accordion-content {
+    padding: 0 !important;
+}
+
+.scrollable-panel {
+    height: 100%;
+    overflow-y: auto;
+}

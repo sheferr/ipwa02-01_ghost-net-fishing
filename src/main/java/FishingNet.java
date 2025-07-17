@@ -1,9 +1,6 @@
+import java.awt.Color;
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.Map;
-import jakarta.enterprise.context.RequestScoped;
-import jakarta.faces.context.FacesContext;
-import jakarta.inject.Named;
 import jakarta.persistence.*;
 
 @Entity
@@ -19,7 +16,34 @@ public class FishingNet implements Serializable {
 	private LocalDate created;
 
 	public enum NetStatus {
-		NONE, REPORTED, IN_PROGRESS, SECURED, LOST
+		NONE      (Color.LIGHT_GRAY,   Color.DARK_GRAY),
+	    REPORTED  (Color.ORANGE,       Color.RED),
+	    IN_PROGRESS(Color.YELLOW,      Color.ORANGE),
+	    SECURED   (Color.GREEN,        Color.DARK_GRAY),
+	    LOST      (Color.RED,          Color.BLACK);
+		
+		
+		private final Color fillColor;
+		private final Color strokeColor;
+		
+		NetStatus(Color fillColor, Color storeColor) {
+	        this.fillColor   = fillColor;
+	        this.strokeColor = storeColor;
+	    }
+
+	    public String getFillColor() {
+	        return String.format("#%02X%02X%02X",
+	        		fillColor.getRed(),
+	        		fillColor.getGreen(),
+	        		fillColor.getBlue());
+	    }
+
+	    public String getStrokeColor() {
+	        return String.format("#%02X%02X%02X",
+	        		strokeColor.getRed(),
+	        		strokeColor.getGreen(),
+	        		strokeColor.getBlue());
+	    }
 	}
 
 	public FishingNet() {
@@ -48,9 +72,27 @@ public class FishingNet implements Serializable {
 	public void setStatus(NetStatus newStatus) {
 		this.status = newStatus;
 	}
-
-	public NetStatus getStatus() {
+	
+	public NetStatus getEStatus()
+	{
 		return this.status;
+	}
+
+	public String getStatus() {
+		switch(this.status)
+		{
+		case IN_PROGRESS:
+			return "In Bearbeitung";
+		case LOST:
+			return "Verschollen";
+		case REPORTED:
+			return "Erfasst";
+		case SECURED:
+			return "Geborgen";
+		case NONE:
+			default:
+			return "Unbekannt";	
+		}
 	}
 
 	public void setCreated(LocalDate date) {

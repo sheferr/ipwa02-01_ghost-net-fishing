@@ -13,21 +13,22 @@
 
 	<h:outputStylesheet library="webjars"
 		name="primeflex/3.3.1/primeflex.min.css" />
+		 <h:outputStylesheet library="css" name="accordion.css" />
 	<!-- Load external JavaScript -->
 	<h:outputScript library="js" name="maps.js" />
 
 </h:head>
-<h:body style="margin: 0; padding: 0;">
+<h:body style="margin: 0; padding: 0;" >
 
 	<p:splitter style="height: 100vh" widgetVar="splitter">
-		<p:splitterPanel size="20">
-			<h:form id="listForm">
+		<p:splitterPanel size="10" styleClass="scrollable-panel">
+			<h:form id="listForm" styleClass="scrollable-panel">
 			
 			<p:accordionPanel id="accordion"
                       value="#{fishingNetController.continents}"
                       var="cont"
                       multiple="true"
-                      style="height:100%; width:100%; margin: 0px;">
+                      style="height:100%; width:100%; margin:0px;" styleClass="no-padding" >
 			
 						<p:tab title="#{cont}" style="height:100%; width:100%;">
 							<p:dataTable id="netsTable#{vs.index}"
@@ -62,7 +63,7 @@
 					</p:dialog>
 			</h:form>
 		</p:splitterPanel>
-		<p:splitterPanel minSize="80" size="80">
+		<p:splitterPanel minSize="90" size="80" style="overflow: hidden;">
 			<p:growl id="messages" showDetail="true" life="2000" />
 
 			<h:form>
@@ -76,13 +77,9 @@
 				</p:remoteCommand>
 			</h:form>
 			<p:gmap widgetVar="myMap" id="maps" disableDefaultUI="true"
-				center="41.381542, 2.122893" zoom="8" type="HYBRID"
+				center="51.1181141, 10.85998582" zoom="5" type="HYBRID"
 				style="width: 100%; height: 100%;"
 				model="#{fishingNetController.circlesView.circleModel}">
-				<!--  <p:ajax event="stateChange" listener="#{eventView.onStateChange}"
-					update="messages" /> -->
-				<!--  <p:ajax event="overlaySelect"
-					listener="#{fishingNetController.circleSelected}" update="messages" /> -->
 				<p:ajax event="overlaySelect"	
 					listener="#{fishingNetController.circleSelected}" update=":listForm:netDialog" oncomplete="PF('netDialogWid').show()" />
 			</p:gmap>
