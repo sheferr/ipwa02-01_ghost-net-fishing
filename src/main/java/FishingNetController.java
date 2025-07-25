@@ -3,25 +3,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.IntToLongFunction;
-import java.util.function.LongToIntFunction;
-import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
-
-import org.primefaces.PrimeFaces;
-import org.primefaces.event.SelectEvent;
 import org.primefaces.event.map.OverlaySelectEvent;
-import org.primefaces.event.map.StateChangeEvent;
 import org.primefaces.model.map.*;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.context.Dependent;
-import jakarta.enterprise.context.RequestScoped;
-import jakarta.enterprise.context.SessionScoped;
-import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
-import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityTransaction;
@@ -38,6 +25,7 @@ public class FishingNetController implements Serializable {
 	private FishingNet fishingNet = new FishingNet();
 	private List<FishingNet> fishingNetList = new ArrayList<>();
 	private FishingNet selectedNet;
+	private String mobile;
 	
 	private static final List<String> CONTINENTS = List.of(
             "Nordamerika",
@@ -83,15 +71,27 @@ public class FishingNetController implements Serializable {
 	public void setSelectedNet(FishingNet selectedNet) {
 		this.selectedNet = selectedNet;
 	}
+	
 	public List<String> getContinents() {
         return CONTINENTS;
-}
+	}
 	
-	public List<FishingNet> getFishingNetsByContinent(String continent) {
+	public List<FishingNet> getFishingNetsByContinent(String continent) 
+	{
         return fishingNetList.stream()
                         .filter(n -> continent.equals(determineContinent(n.getLatitude(), n.getLongitude())))
                         .collect(Collectors.toList());
-}
+	}
+	
+	public String getMobile()
+	{
+		return this.mobile;
+	}
+	
+	public void setMobile(String mobile)
+	{
+		this.mobile = mobile;
+	}
 	
 	private String determineContinent(double lat, double lng) {
         if (lat < -60) {
@@ -129,26 +129,39 @@ public class FishingNetController implements Serializable {
 		fishingNet.setRadius(Double.parseDouble(params.get("radius")));
 		fishingNet.setStatus(FishingNet.NetStatus.REPORTED);
 		fishingNet.setCreated(LocalDate.now());
-
-		System.out.println("JavaScript hat ein Shape gezeichnet:");
-		System.out.println("Typ: " + shapeType + ", Lat: " + fishingNet.getLatitude() + ", Lng: "
-				+ fishingNet.getLongitude() + " radius: " + fishingNet.getRadius());
 	}
 
 	public void saveNewFishingNet() {
-		System.out.println("Saving new fishing net: " + fishingNet);
 		fishingNetList.add(fishingNet); // lokale Liste
 
 		EntityTransaction t = fishingNetDatabase.getAndBeginTransaction();
 		fishingNetDatabase.add(fishingNet);
 		t.commit();
-
-		System.out.println("Neues Netz gespeichert: lat: " + fishingNet.getLatitude() + ", lng: "
-				+ fishingNet.getLongitude() + ", radius: " + fishingNet.getRadius() + ", status: "
-				+ fishingNet.getStatus() + ", created: " + fishingNet.getCreated());
+		
+		System.out.println("Save new Fishing net" + fishingNet);
 
 		circlesView.add(fishingNet);
 		fishingNet = new FishingNet(); // Formular zurücksetzen
+	}
+	
+	public void processFishingNet()
+	{
+		if (selectedNet == null || mobile == null || mobile.isBlank()) {
+            return;
+		}
+	    EntityTransaction t = fishingNetDatabase.getAndBeginTransaction();
+	    User user = fishingNetDatabase.findUserByMobile(mobile);
+	    if (user == null) 
+	    {
+            user = new User();
+            user.setMobile(mobile);
+            fishingNetDatabase.addUser(user);
+	    }
+	    selectedNet.setUser(user);
+	    selectedNet.setStatus(FishingNet.NetStatus.IN_PROGRESS);
+	    fishingNetDatabase.update(selectedNet);
+	    t.commit();
+	    mobile = "";
 	}
 
 	public void circleSelected(OverlaySelectEvent<Long> event) {
@@ -171,6 +184,5 @@ public class FishingNetController implements Serializable {
 	}
 
 	public void onBlurAction() {
-		System.out.println("Aktualisiert!");
 	}
 }

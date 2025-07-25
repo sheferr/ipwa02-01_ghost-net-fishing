@@ -13,54 +13,60 @@
 
 	<h:outputStylesheet library="webjars"
 		name="primeflex/3.3.1/primeflex.min.css" />
-		 <h:outputStylesheet library="css" name="accordion.css" />
+	<h:outputStylesheet library="css" name="accordion.css" />
 	<!-- Load external JavaScript -->
 	<h:outputScript library="js" name="maps.js" />
 
 </h:head>
-<h:body style="margin: 0; padding: 0;" >
+<h:body style="margin: 0; padding: 0;">
 
 	<p:splitter style="height: 100vh" widgetVar="splitter">
 		<p:splitterPanel size="10" styleClass="scrollable-panel">
 			<h:form id="listForm" styleClass="scrollable-panel">
-			
-			<p:accordionPanel id="accordion"
-                      value="#{fishingNetController.continents}"
-                      var="cont"
-                      multiple="true"
-                      style="height:100%; width:100%; margin:0px;" styleClass="no-padding" >
-			
-						<p:tab title="#{cont}" style="height:100%; width:100%;">
-							<p:dataTable id="netsTable#{vs.index}"
-								value="#{fishingNetController.getFishingNetsByContinent(cont)}"
-								var="net" selection="#{fishingNetController.selectedNet}"
-								rowKey="#{net.id}" selectionMode="single">
-								<p:ajax event="rowSelect"
-									update=":listForm:netDialog" oncomplete="PF('netDialogWid').show()" />
-								<p:column headerText="ID">
-									<h:outputText value="#{net.id}" />
-								</p:column>
-								<p:column headerText="Status">
-									<h:outputText value="#{net.status}" />
-								</p:column>
-							</p:dataTable>
-						</p:tab>
+
+				<p:accordionPanel id="accordion"
+					value="#{fishingNetController.continents}" var="cont"
+					multiple="true" style="height:100%; width:100%; margin:0px;"
+					styleClass="no-padding">
+
+					<p:tab title="#{cont}" style="height:100%; width:100%;">
+						<p:dataTable id="netsTable#{vs.index}"
+							value="#{fishingNetController.getFishingNetsByContinent(cont)}"
+							var="net" selection="#{fishingNetController.selectedNet}"
+							rowKey="#{net.id}" selectionMode="single">
+							<p:ajax event="rowSelect" update=":listForm:netDialog"
+								oncomplete="PF('netDialogWid').show()" />
+							<p:column headerText="ID">
+								<h:outputText value="#{net.id}" />
+							</p:column>
+							<p:column headerText="Status">
+								<h:outputText value="#{net.status}" />
+							</p:column>
+						</p:dataTable>
+					</p:tab>
 				</p:accordionPanel>
 				<p:dialog id="netDialog" widgetVar="netDialogWid" modal="true"
-						header="Info">
-						<h:panelGrid columns="2" cellpadding="5">
-							<h:outputText value="Breitengrad:" />
-							<h:outputText
-								value="#{fishingNetController.selectedNet.latitude}" />
-							<h:outputText value="Längengrad:" />
-							<h:outputText
-								value="#{fishingNetController.selectedNet.longitude}" />
-							<h:outputText value="Radius:" />
-							<h:outputText value="#{fishingNetController.selectedNet.area}" />
-							<h:outputText value="Status:" />
-							<h:outputText value="#{fishingNetController.selectedNet.status}" />
-						</h:panelGrid>
-					</p:dialog>
+					header="Info">
+					<h:panelGrid columns="2" cellpadding="5">
+						<h:outputText value="Breitengrad:" />
+						<h:outputText value="#{fishingNetController.selectedNet.latitude}" />
+						<h:outputText value="Längengrad:" />
+						<h:outputText
+							value="#{fishingNetController.selectedNet.longitude}" />
+						<h:outputText value="Radius:" />
+						<h:outputText value="#{fishingNetController.selectedNet.area}" />
+						<h:outputText value="Status:" />
+						<h:outputText value="#{fishingNetController.selectedNet.status}" />
+
+						<h:outputText value="Telefonnummer:" />
+						<p:inputText id="mobile" value="#{fishingNetController.mobile}" />
+					</h:panelGrid>
+					<p:commandButton value="Speichern"
+						action="#{fishingNetController.processFishingNet}" 
+						process="@this :listForm:mobile"
+						update=":listForm:accordion :listForm:netDialog" />
+
+				</p:dialog>
 			</h:form>
 		</p:splitterPanel>
 		<p:splitterPanel minSize="90" size="80" style="overflow: hidden;">
@@ -80,34 +86,35 @@
 				center="51.1181141, 10.85998582" zoom="5" type="HYBRID"
 				style="width: 100%; height: 100%;"
 				model="#{fishingNetController.circlesView.circleModel}">
-				<p:ajax event="overlaySelect"	
-					listener="#{fishingNetController.circleSelected}" update=":listForm:netDialog" oncomplete="PF('netDialogWid').show()" />
+				<p:ajax event="overlaySelect"
+					listener="#{fishingNetController.circleSelected}"
+					update=":listForm:netDialog" oncomplete="PF('netDialogWid').show()" />
 			</p:gmap>
 
 			<p:dialog header="Neuer Eintrag" widgetVar="shapeDialogWid"
 				id="shapeDialog" modal="true" closeOnEscape="true" resizable="false"
 				onHide="console.log('loeschen!!')">
 				<h:panelGrid columns="2" cellpadding="5">
-						<h:outputText value="Breitengrad " />
-						<p:inputText value="#{fishingNetController.fishingNet.latitude}">
-							<p:ajax event="blur"
-								listener="#{fishingNetController.onBlurAction}" process="@this"
-								update="@none" />
-						</p:inputText>
-						<h:outputText value="Längengrad " />
-						<p:inputText value="#{fishingNetController.fishingNet.longitude}"
-							required="true">
-							<p:ajax event="blur"
-								listener="#{fishingNetController.onBlurAction}" process="@this"
-								update="@none" />
-						</p:inputText>
-						<h:outputText value="Radius (km²)" />
-						<p:inputText value="#{fishingNetController.fishingNet.area}"
-							required="true">
-							<p:ajax event="blur"
-								listener="#{fishingNetController.onBlurAction}" process="@this"
-								update="@none" />
-						</p:inputText>
+					<h:outputText value="Breitengrad " />
+					<p:inputText value="#{fishingNetController.fishingNet.latitude}">
+						<p:ajax event="blur"
+							listener="#{fishingNetController.onBlurAction}" process="@this"
+							update="@none" />
+					</p:inputText>
+					<h:outputText value="Längengrad " />
+					<p:inputText value="#{fishingNetController.fishingNet.longitude}"
+						required="true">
+						<p:ajax event="blur"
+							listener="#{fishingNetController.onBlurAction}" process="@this"
+							update="@none" />
+					</p:inputText>
+					<h:outputText value="Radius (km²)" />
+					<p:inputText value="#{fishingNetController.fishingNet.area}"
+						required="true">
+						<p:ajax event="blur"
+							listener="#{fishingNetController.onBlurAction}" process="@this"
+							update="@none" />
+					</p:inputText>
 				</h:panelGrid>
 				<p:commandButton value="Speichern"
 					action="#{fishingNetController.saveNewFishingNet}"

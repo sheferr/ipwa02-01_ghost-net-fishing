@@ -1,43 +1,33 @@
-import jakarta.enterprise.context.RequestScoped;
-import jakarta.inject.Named;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
-@Named
-@RequestScoped
 public class User
 {
 	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int ID;
-	private String name;
-	private String mobile_number;
+	private String mobile;
 	
 	public User()
-	{		
+	{
+		this.mobile = "";
 	}
 	
-	public void setName(String name)
+	public User(String number)
 	{
-		this.name = name;
-	}
-	
-	public String getName()
-	{
-		return this.name;
+		this.mobile = number;
 	}
 	
 	public void setMobile(String number)
 	{
-		this.mobile_number = number;
+		this.mobile = number;
 	}
 	
 	public String getMobile()
 	{
-		return this.mobile_number;
+		return this.mobile;
 	}
-	
 }

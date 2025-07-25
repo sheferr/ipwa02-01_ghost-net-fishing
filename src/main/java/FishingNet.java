@@ -14,6 +14,9 @@ public class FishingNet implements Serializable {
 
 	private NetStatus status;
 	private LocalDate created;
+	
+	@ManyToOne(fetch= FetchType.EAGER)
+	private User user;
 
 	public enum NetStatus {
 		NONE      (Color.LIGHT_GRAY,   Color.DARK_GRAY),
@@ -123,5 +126,15 @@ public class FishingNet implements Serializable {
 	public int getId()
 	{
 		return ID;
-	}	
+	}
+	
+	public User getUser()
+	{
+		return user;
+	}
+	
+	public void setUser(User newUser)
+	{
+		this.user = newUser;		
+	}
 }

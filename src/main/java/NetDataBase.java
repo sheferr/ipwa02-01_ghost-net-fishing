@@ -8,6 +8,7 @@ import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 
@@ -48,6 +49,24 @@ public class NetDataBase {
 
 	public void add(FishingNet net) {
 		entityManager.persist(net);
+	}
+	
+	public void update(Object entity) {
+		entityManager.merge(entity);
+	}
+	
+	public void addUser(User user)
+	{
+		entityManager.persist(user);
+	}
+	
+	public User findUserByMobile(String mobile) 
+	{
+	    TypedQuery<User> q = entityManager
+	    		.createQuery("SELECT u FROM User u WHERE u.mobile = :mobile", User.class)
+	            .setParameter("mobile", mobile);
+		List<User> users = q.getResultList();
+		return users.isEmpty() ? null : users.get(0);
 	}
 
 	public List<FishingNet> getAllFishingNet() {
