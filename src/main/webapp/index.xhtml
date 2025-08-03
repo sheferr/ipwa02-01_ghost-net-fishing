@@ -22,6 +22,7 @@
 
 	<p:splitter style="height: 100vh" widgetVar="splitter">
 		<p:splitterPanel size="10" styleClass="scrollable-panel">
+			<p:growl id="messages" showDetail="true" life="5000" />
 			<h:form id="listForm" styleClass="scrollable-panel">
 
 				<p:accordionPanel id="accordion"
@@ -51,27 +52,45 @@
 						<h:outputText value="Breitengrad:" />
 						<h:outputText value="#{fishingNetController.selectedNet.latitude}" />
 						<h:outputText value="Längengrad:" />
-						<h:outputText
-							value="#{fishingNetController.selectedNet.longitude}" />
+						<h:outputText value="#{fishingNetController.selectedNet.longitude}" />
 						<h:outputText value="Radius:" />
 						<h:outputText value="#{fishingNetController.selectedNet.area}" />
 						<h:outputText value="Status:" />
 						<h:outputText value="#{fishingNetController.selectedNet.status}" />
+						
+						<h:outputText rendered="#{fishingNetController.showName}" value="Name:" />
+						<p:inputText rendered="#{fishingNetController.showName}" id="name" value="#{fishingNetController.currentUser.name}">
+							<p:ajax event="blur"
+								listener="#{fishingNetController.onBlurAction}" process="@this"
+								update="@none" />
+						</p:inputText>
 
-						<h:outputText value="Telefonnummer:" />
-						<p:inputText id="mobile" value="#{fishingNetController.mobile}" />
+						<h:outputText rendered="#{fishingNetController.showNext}" value="Telefonnummer:" />
+						<p:inputText rendered="#{fishingNetController.showNext}" id="mobile" value="#{fishingNetController.currentUser.mobile}" >
+							<p:ajax event="blur"
+								listener="#{fishingNetController.onBlurAction}" process="@this"
+								update="@none" />
+						</p:inputText>
 					</h:panelGrid>
-					<p:commandButton value="Speichern"
+					
+					<p:commandButton value="Verschollen"
+						rendered="#{fishingNetController.showMissing}"
+						action="#{fishingNetController.cancelFishingNet}" 
+						process="@this :listForm:mobile :listForm:name"
+						update=":listForm:accordion :listForm:netDialog messages"
+						styleClass="ui-button-warning" />
+					
+					<p:commandButton value="#{fishingNetController.selectedNet.nextStatus}"
+						rendered="#{fishingNetController.showNext}"	
 						action="#{fishingNetController.processFishingNet}" 
-						process="@this :listForm:mobile"
-						update=":listForm:accordion :listForm:netDialog" />
+						process="@this :listForm:mobile :listForm:name"
+						update=":listForm:accordion :listForm:netDialog messages"
+						styleClass="ui-button-success" />
 
 				</p:dialog>
 			</h:form>
 		</p:splitterPanel>
 		<p:splitterPanel minSize="90" size="80" style="overflow: hidden;">
-			<p:growl id="messages" showDetail="true" life="2000" />
-
 			<h:form>
 				<p:remoteCommand name="callOnStateChange" update="shapeDialog"
 					action="#{fishingNetController.onAddingNewCircle}"

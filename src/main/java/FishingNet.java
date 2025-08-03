@@ -28,6 +28,7 @@ public class FishingNet implements Serializable {
 		
 		private final Color fillColor;
 		private final Color strokeColor;
+		private static final NetStatus[] vals = values();
 		
 		NetStatus(Color fillColor, Color storeColor) {
 	        this.fillColor   = fillColor;
@@ -46,6 +47,10 @@ public class FishingNet implements Serializable {
 	        		strokeColor.getRed(),
 	        		strokeColor.getGreen(),
 	        		strokeColor.getBlue());
+	    }
+	    
+	    public NetStatus next() {
+	        return vals[(this.ordinal() + 1) % vals.length];
 	    }
 	}
 
@@ -84,17 +89,35 @@ public class FishingNet implements Serializable {
 	public String getStatus() {
 		switch(this.status)
 		{
-		case IN_PROGRESS:
-			return "In Bearbeitung";
-		case LOST:
-			return "Verschollen";
 		case REPORTED:
 			return "Erfasst";
+		case IN_PROGRESS:
+			return "In Bearbeitung";
 		case SECURED:
 			return "Geborgen";
+		case LOST:
+			return "Verschollen";
 		case NONE:
 			default:
 			return "Unbekannt";	
+		}
+	}
+	
+	public String getNextStatus()
+	{
+		switch(this.status.next())
+		{
+		case REPORTED:
+			return "Erfasst";
+		case IN_PROGRESS:
+			return "Bergung beanspruchen";
+		case SECURED:
+			return "Geborgen melden";
+		case LOST:
+			return "Verschollen melden";
+		case NONE:
+			default:
+			return "Unbekannt";
 		}
 	}
 

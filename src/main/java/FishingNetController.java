@@ -8,6 +8,7 @@ import org.primefaces.event.map.OverlaySelectEvent;
 import org.primefaces.model.map.*;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -21,11 +22,14 @@ public class FishingNetController implements Serializable {
 	NetDataBase fishingNetDatabase;
 
 	CirclesView circlesView = new CirclesView();
-
 	private FishingNet fishingNet = new FishingNet();
 	private List<FishingNet> fishingNetList = new ArrayList<>();
+	User currentUser = new User();
 	private FishingNet selectedNet;
-	private String mobile;
+	
+	private boolean showMissing = false;
+	private boolean showNext = false;
+	private boolean showName = false;
 	
 	private static final List<String> CONTINENTS = List.of(
             "Nordamerika",
@@ -39,15 +43,22 @@ public class FishingNetController implements Serializable {
 	@PostConstruct
 	public void init() {
 		fishingNetList = fishingNetDatabase.getAllFishingNet();
-		System.out.println("Eingelesene Fischernetze: " + fishingNetList.size());
-		System.out.println("size of continent list: " + CONTINENTS.size());
-
 		for (FishingNet net : fishingNetList) {
-			System.out.println("Adding net to view..");
+			System.out.println("Adding to view " + net);
 			circlesView.add(net);
 		}
 	}
-
+	
+	public User getCurrentUser()
+	{
+		return this.currentUser;
+	}
+	
+	public void setCurrentUser(User user)
+	{
+		this.currentUser = user;
+	}
+	
 	public FishingNet getFishingNet() {
 		return fishingNet;
 	}
@@ -82,15 +93,35 @@ public class FishingNetController implements Serializable {
                         .filter(n -> continent.equals(determineContinent(n.getLatitude(), n.getLongitude())))
                         .collect(Collectors.toList());
 	}
-	
-	public String getMobile()
+		
+	public boolean getShowMissing()
 	{
-		return this.mobile;
+		return this.showMissing;
 	}
 	
-	public void setMobile(String mobile)
+	public void setShowMissing(boolean missing)
 	{
-		this.mobile = mobile;
+		this.showMissing = missing;
+	}
+	
+	public boolean getShowName()
+	{
+		return this.showName;
+	}
+	
+	public void setShowName(boolean name)
+	{
+		this.showName = name;
+	}
+	
+	public boolean getShowNext()
+	{
+		return this.showNext;
+	}
+	
+	public void setShowNext(boolean show)
+	{
+		this.showNext = show;
 	}
 	
 	private String determineContinent(double lat, double lng) {
@@ -130,6 +161,11 @@ public class FishingNetController implements Serializable {
 		fishingNet.setStatus(FishingNet.NetStatus.REPORTED);
 		fishingNet.setCreated(LocalDate.now());
 	}
+	
+	public void addMessage(FacesMessage.Severity severity, String summary, String detail)
+	{
+		FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
+	}
 
 	public void saveNewFishingNet() {
 		fishingNetList.add(fishingNet); // lokale Liste
@@ -137,31 +173,102 @@ public class FishingNetController implements Serializable {
 		EntityTransaction t = fishingNetDatabase.getAndBeginTransaction();
 		fishingNetDatabase.add(fishingNet);
 		t.commit();
+		addMessage(FacesMessage.SEVERITY_INFO, "Info", "Fischernetz wurde angelegt.");
 		
-		System.out.println("Save new Fishing net" + fishingNet);
-
 		circlesView.add(fishingNet);
 		fishingNet = new FishingNet(); // Formular zurücksetzen
 	}
-	
+
 	public void processFishingNet()
 	{
-		if (selectedNet == null || mobile == null || mobile.isBlank()) {
+		if (selectedNet == null || this.currentUser == null)
+		{
+			System.out.println("nullptr");
+			return;
+		}
+		if ( this.currentUser.getMobile() == null || this.currentUser.getMobile().isBlank()) {
+			addMessage(FacesMessage.SEVERITY_ERROR, "Fehler", "Bitte zuerst eine Telefonnummer eingeben.");
             return;
 		}
-	    EntityTransaction t = fishingNetDatabase.getAndBeginTransaction();
-	    User user = fishingNetDatabase.findUserByMobile(mobile);
-	    if (user == null) 
+		
+		EntityTransaction t = fishingNetDatabase.getAndBeginTransaction();
+	    User user = fishingNetDatabase.findUserByMobile(this.currentUser.getMobile());
+		
+		if (selectedNet.getEStatus() == FishingNet.NetStatus.REPORTED)
+		{
+		    if (user == null) 
+		    {
+	            user = currentUser;
+	            //user.setMobile(this.currentUser.getMobile());
+	            fishingNetDatabase.addUser(user);
+		    }
+		    selectedNet.setUser(user);
+		    selectedNet.setStatus(FishingNet.NetStatus.IN_PROGRESS);
+		    fishingNetDatabase.update(selectedNet);
+		    t.commit();
+		    addMessage(FacesMessage.SEVERITY_INFO, "Info", "Fischernetz wurde in Arbeit gesetzt.");
+		}
+		else if (selectedNet.getEStatus() == FishingNet.NetStatus.IN_PROGRESS)
+		{
+			if (user != null)
+			{
+				if (selectedNet.getUser().getMobile().equals(user.getMobile()))
+				{
+					selectedNet.setUser(user);
+					selectedNet.setStatus(FishingNet.NetStatus.SECURED);
+					fishingNetDatabase.update(selectedNet);
+				    t.commit();
+				    addMessage(FacesMessage.SEVERITY_INFO, "Info", "Fischernetz wurde gesichert.");
+				}
+				else
+				{
+					addMessage(FacesMessage.SEVERITY_ERROR, "Fehler", "Die eingegebene Nummer stimmt nicht mit der erwarteten Nummer überein.");
+				}
+			}
+			else
+			{
+				addMessage(FacesMessage.SEVERITY_ERROR, "Fehler", "Die eingegebene Nummer existiert nicht.");
+			}
+			
+		}
+		
+		currentUser = new User();
+	}
+	
+	public void cancelFishingNet()
+	{
+		if (selectedNet == null || this.currentUser == null)
+		{
+			return;
+		}
+		if ( this.currentUser.getMobile() == null || this.currentUser.getMobile().isBlank()) {
+			addMessage(FacesMessage.SEVERITY_ERROR, "Fehler", "Bitte zuerst eine Telefonnummer eingeben.");
+            return;
+		}
+		
+		EntityTransaction t = fishingNetDatabase.getAndBeginTransaction();
+	    User user = fishingNetDatabase.findUserByMobile(this.currentUser.getMobile());
+	    
+	    if (user != null)
 	    {
-            user = new User();
-            user.setMobile(mobile);
-            fishingNetDatabase.addUser(user);
+	    	if (selectedNet.getUser().getMobile().equals(user.getMobile()))
+	    	{
+	    		selectedNet.setUser(user);
+		    	selectedNet.setStatus(FishingNet.NetStatus.LOST);
+				fishingNetDatabase.update(selectedNet);
+			    t.commit();	
+			    addMessage(FacesMessage.SEVERITY_INFO, "Info", "Fischernetz wurde als Verschollen gemeldet.");
+	    	}
+	    	else
+	    	{
+	    		addMessage(FacesMessage.SEVERITY_ERROR, "Fehler", "Die eingegebene Nummer stimmt nicht mit der erwarteten Nummer überein.");
+	    	}
 	    }
-	    selectedNet.setUser(user);
-	    selectedNet.setStatus(FishingNet.NetStatus.IN_PROGRESS);
-	    fishingNetDatabase.update(selectedNet);
-	    t.commit();
-	    mobile = "";
+	    else
+	    {
+	    	addMessage(FacesMessage.SEVERITY_ERROR, "Fehler", "Die eingegebene Nummer existiert nicht.");
+	    }
+	    currentUser = new User();
 	}
 
 	public void circleSelected(OverlaySelectEvent<Long> event) {
@@ -173,6 +280,23 @@ public class FishingNetController implements Serializable {
 					if (Long.valueOf(net.getId()) == overlay.getData())
 					{
 						selectedNet = net;
+						
+						if (selectedNet.getEStatus() == FishingNet.NetStatus.REPORTED)
+							showName = true;
+						else
+							showName = false;
+						
+						// Vermisst kann nur ausgewählt werden, wenn es bereits 'in Arbeit' ist. 
+						if (selectedNet.getEStatus() == FishingNet.NetStatus.IN_PROGRESS)
+							showMissing = true;
+						else
+							showMissing = false;
+						
+						if (selectedNet.getEStatus() != FishingNet.NetStatus.LOST && selectedNet.getEStatus() != FishingNet.NetStatus.SECURED)
+							showNext = true;
+						else				
+							showNext = false;
+						
 						break;
 					}
 				}
