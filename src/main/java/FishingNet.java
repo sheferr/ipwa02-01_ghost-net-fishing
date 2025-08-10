@@ -158,6 +158,7 @@ public class FishingNet implements Serializable {
 	
 	public void setUser(User newUser)
 	{
+		System.out.println("Set user: " + newUser);
 		this.user = newUser;		
 	}
 }

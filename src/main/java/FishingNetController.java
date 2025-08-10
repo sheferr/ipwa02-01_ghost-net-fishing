@@ -168,6 +168,11 @@ public class FishingNetController implements Serializable {
 	}
 
 	public void saveNewFishingNet() {
+		if (fishingNet.getLatitude() == null || fishingNet.getLongitude() == null || fishingNet.getRadius() == null) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Fehler", "Bitte alle Felder ausfüllen.");
+            return;
+		}
+		
 		fishingNetList.add(fishingNet); // lokale Liste
 
 		EntityTransaction t = fishingNetDatabase.getAndBeginTransaction();
@@ -186,8 +191,13 @@ public class FishingNetController implements Serializable {
 			System.out.println("nullptr");
 			return;
 		}
-		if ( this.currentUser.getMobile() == null || this.currentUser.getMobile().isBlank()) {
-			addMessage(FacesMessage.SEVERITY_ERROR, "Fehler", "Bitte zuerst eine Telefonnummer eingeben.");
+		
+		if (this.currentUser.getName() == null || this.currentUser.getName().isBlank()) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Fehler", "Bitte zuerst einen Namen eingeben.");
+            return;
+		}
+		if (this.currentUser.getMobile() == null || this.currentUser.getMobile().isBlank()) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Fehler", "Bitte zuerst eine Telefonnummer eingeben.");
             return;
 		}
 		
@@ -199,13 +209,13 @@ public class FishingNetController implements Serializable {
 		    if (user == null) 
 		    {
 	            user = currentUser;
-	            //user.setMobile(this.currentUser.getMobile());
 	            fishingNetDatabase.addUser(user);
 		    }
 		    selectedNet.setUser(user);
 		    selectedNet.setStatus(FishingNet.NetStatus.IN_PROGRESS);
 		    fishingNetDatabase.update(selectedNet);
 		    t.commit();
+		    circlesView.update(selectedNet);
 		    addMessage(FacesMessage.SEVERITY_INFO, "Info", "Fischernetz wurde in Arbeit gesetzt.");
 		}
 		else if (selectedNet.getEStatus() == FishingNet.NetStatus.IN_PROGRESS)
@@ -218,6 +228,7 @@ public class FishingNetController implements Serializable {
 					selectedNet.setStatus(FishingNet.NetStatus.SECURED);
 					fishingNetDatabase.update(selectedNet);
 				    t.commit();
+				    circlesView.update(selectedNet);
 				    addMessage(FacesMessage.SEVERITY_INFO, "Info", "Fischernetz wurde gesichert.");
 				}
 				else
@@ -257,6 +268,7 @@ public class FishingNetController implements Serializable {
 		    	selectedNet.setStatus(FishingNet.NetStatus.LOST);
 				fishingNetDatabase.update(selectedNet);
 			    t.commit();	
+			    circlesView.update(selectedNet);
 			    addMessage(FacesMessage.SEVERITY_INFO, "Info", "Fischernetz wurde als Verschollen gemeldet.");
 	    	}
 	    	else
@@ -305,8 +317,5 @@ public class FishingNetController implements Serializable {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
-	}
-
-	public void onBlurAction() {
 	}
 }

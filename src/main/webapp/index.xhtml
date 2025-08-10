@@ -52,37 +52,48 @@
 						<h:outputText value="Breitengrad:" />
 						<h:outputText value="#{fishingNetController.selectedNet.latitude}" />
 						<h:outputText value="Längengrad:" />
-						<h:outputText value="#{fishingNetController.selectedNet.longitude}" />
+						<h:outputText
+							value="#{fishingNetController.selectedNet.longitude}" />
 						<h:outputText value="Radius:" />
 						<h:outputText value="#{fishingNetController.selectedNet.area}" />
 						<h:outputText value="Status:" />
 						<h:outputText value="#{fishingNetController.selectedNet.status}" />
-						
-						<h:outputText rendered="#{fishingNetController.showName}" value="Name:" />
-						<p:inputText rendered="#{fishingNetController.showName}" id="name" value="#{fishingNetController.currentUser.name}">
+
+						<h:outputText rendered="#{fishingNetController.showName}"
+							value="Name:" />
+						<p:inputText rendered="#{fishingNetController.showName}" id="name"
+							value="#{fishingNetController.currentUser.name}"
+							validatorMessage="Bitte nur Buchstaben verwenden."
+							required="true">
+							<f:validateRegex pattern="^[A-Za-z]+$" />
 							<p:ajax event="blur"
 								listener="#{fishingNetController.onBlurAction}" process="@this"
-								update="@none" />
+								update="messages" />
 						</p:inputText>
 
-						<h:outputText rendered="#{fishingNetController.showNext}" value="Telefonnummer:" />
-						<p:inputText rendered="#{fishingNetController.showNext}" id="mobile" value="#{fishingNetController.currentUser.mobile}" >
+						<h:outputText rendered="#{fishingNetController.showNext}"
+							value="Telefonnummer:" />
+						<p:inputText rendered="#{fishingNetController.showNext}"
+							id="mobile" value="#{fishingNetController.currentUser.mobile}"
+							validatorMessage="Bitte nur Ziffern verwenden." required="true">
+							<f:validateRegex pattern="^[0-9]+$" />
 							<p:ajax event="blur"
 								listener="#{fishingNetController.onBlurAction}" process="@this"
-								update="@none" />
+								update="messages" />
 						</p:inputText>
 					</h:panelGrid>
-					
+
 					<p:commandButton value="Verschollen"
 						rendered="#{fishingNetController.showMissing}"
-						action="#{fishingNetController.cancelFishingNet}" 
+						action="#{fishingNetController.cancelFishingNet}"
 						process="@this :listForm:mobile :listForm:name"
 						update=":listForm:accordion :listForm:netDialog messages"
 						styleClass="ui-button-warning" />
-					
-					<p:commandButton value="#{fishingNetController.selectedNet.nextStatus}"
-						rendered="#{fishingNetController.showNext}"	
-						action="#{fishingNetController.processFishingNet}" 
+
+					<p:commandButton
+						value="#{fishingNetController.selectedNet.nextStatus}"
+						rendered="#{fishingNetController.showNext}"
+						action="#{fishingNetController.processFishingNet}"
 						process="@this :listForm:mobile :listForm:name"
 						update=":listForm:accordion :listForm:netDialog messages"
 						styleClass="ui-button-success" />
@@ -92,7 +103,8 @@
 		</p:splitterPanel>
 		<p:splitterPanel minSize="90" size="80" style="overflow: hidden;">
 			<h:form>
-				<p:remoteCommand name="callOnStateChange" update="shapeDialog"
+				<p:remoteCommand name="callOnStateChange"
+					update=":shapeForm:shapeDialog"
 					action="#{fishingNetController.onAddingNewCircle}"
 					oncomplete="PF('shapeDialogWid').show()">
 					<f:param name="shapeType" />
@@ -109,42 +121,36 @@
 					listener="#{fishingNetController.circleSelected}"
 					update=":listForm:netDialog" oncomplete="PF('netDialogWid').show()" />
 			</p:gmap>
-
-			<p:dialog header="Neuer Eintrag" widgetVar="shapeDialogWid"
-				id="shapeDialog" modal="true" closeOnEscape="true" resizable="false"
-				onHide="console.log('loeschen!!')">
-				<h:panelGrid columns="2" cellpadding="5">
-					<h:outputText value="Breitengrad " />
-					<p:inputText value="#{fishingNetController.fishingNet.latitude}">
-						<p:ajax event="blur"
-							listener="#{fishingNetController.onBlurAction}" process="@this"
-							update="@none" />
-					</p:inputText>
-					<h:outputText value="Längengrad " />
-					<p:inputText value="#{fishingNetController.fishingNet.longitude}"
-						required="true">
-						<p:ajax event="blur"
-							listener="#{fishingNetController.onBlurAction}" process="@this"
-							update="@none" />
-					</p:inputText>
-					<h:outputText value="Radius (km²)" />
-					<p:inputText value="#{fishingNetController.fishingNet.area}"
-						required="true">
-						<p:ajax event="blur"
-							listener="#{fishingNetController.onBlurAction}" process="@this"
-							update="@none" />
-					</p:inputText>
-				</h:panelGrid>
-				<p:commandButton value="Speichern"
-					action="#{fishingNetController.saveNewFishingNet}"
-					icon="pi pi-save" styleClass="ui-button-raised ui-button-secondary"
-					oncomplete="PF('shapeDialogWid').hide()"
-					update=":listForm:accordion" />
-			</p:dialog>
-
+			<h:form id="shapeForm">
+				<p:dialog header="Neuer Eintrag" widgetVar="shapeDialogWid"
+					id="shapeDialog" modal="true" closeOnEscape="true"
+					resizable="false">
+					<h:panelGrid columns="2" cellpadding="5">
+						<h:outputText value="Breitengrad " />
+						<p:inputText value="#{fishingNetController.fishingNet.latitude}"
+							required="true">
+							<p:ajax event="blur" process="@this" update="messages" />
+						</p:inputText>
+						<h:outputText value="Längengrad " />
+						<p:inputText value="#{fishingNetController.fishingNet.longitude}"
+							required="true">
+							<p:ajax event="blur" process="@this" update="messages" />
+						</p:inputText>
+						<h:outputText value="Radius (km²)" />
+						<p:inputText value="#{fishingNetController.fishingNet.area}"
+							required="true">
+							<p:ajax event="blur" process="@this" update="messages" />
+						</p:inputText>
+					</h:panelGrid>
+					<p:commandButton value="Speichern"
+						action="#{fishingNetController.saveNewFishingNet}"
+						icon="pi pi-save"
+						styleClass="ui-button-raised ui-button-secondary"
+						oncomplete="if (!args.validationFailed) PF('shapeDialogWid').hide()"
+						update=":listForm:accordion messages" />
+				</p:dialog>
+			</h:form>
 		</p:splitterPanel>
-
 	</p:splitter>
-
 </h:body>
 </html>

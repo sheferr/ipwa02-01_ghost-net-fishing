@@ -38,6 +38,18 @@ public class CirclesView implements Serializable {
 			System.out.println("Circle added: " + circle.getId());
 		}
 	}
+	
+	public void update(FishingNet net) {
+        if (net != null) {
+                for (Circle<Long> circle : circleModel.getCircles()) {
+                        if (circle.getData().equals(Long.valueOf(net.getId()))) {
+                                circle.setStrokeColor(net.getEStatus().getStrokeColor());
+                                circle.setFillColor(net.getEStatus().getFillColor());
+                                break;
+                        }
+                }
+        }
+}
 
 	public List<Circle<Long>> getAllCircles() {
 		return circleModel.getCircles();
