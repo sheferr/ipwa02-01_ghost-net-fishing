@@ -1,60 +1,54 @@
+(function () {
+  var tries = 0;
 
-function initMap() {
-	console.log("Starting to init a map");
-	if (typeof google === "undefined" || typeof google.maps === "undefined") {
-		console.log("Google Maps API not yet loaded. Retrying...");
-	}
+  function initMap() {
+    var w = window.PF ? PF('myMap') : null;
+    if (!w || typeof w.getMap !== 'function') {
+      return defer();
+    }
+    if (!(window.google && google.maps && google.maps.drawing)) {
+      return defer();
+    }
 
-	if (typeof PF === "undefined" || !PF('myMap') || !PF('myMap').getMap()) {
-		console.log("PrimeFaces map not ready. Retrying...");
-		setTimeout(initMap, 1000);
-		return;
-	}
-	console.log("PrimeFaces map ready.");
-
-	var gmap = PF('myMap').getMap();
-	var drawingManager = new google.maps.drawing.DrawingManager({
-		drawingMode: null,
-		drawingControl: true,
-		drawingControlOptions: {
-			position: google.maps.ControlPosition.TOP_CENTER,
-			drawingModes: [
-				google.maps.drawing.OverlayType.CIRCLE,
-			]
+    var map = w.getMap();
+    if (!map) {
+      return defer();
+    }
+	
+    var drawingManager = new google.maps.drawing.DrawingManager({
+      drawingControl: true,
+      drawingControlOptions: { 
+		position: google.maps.ControlPosition.TOP_CENTER,
+		drawingModes: [google.maps.drawing.OverlayType.CIRCLE] 
 		}
-	});
+    });
+    drawingManager.setMap(map);
 
-	drawingManager.setMap(gmap);
+    google.maps.event.addListener(drawingManager, 'circlecomplete', function (circle) {
+		console.log('Overlay completed:', circle);
+      try {
+        callOnStateChange([
+          { name: 'centerLat',  value: circle.getCenter().lat() },
+          { name: 'centerLng',  value: circle.getCenter().lng() },
+          { name: 'radius',     value: circle.getRadius() }
+        ]);
+      } catch (e) {
+        console.error('callOnStateChange fehlgeschlagen', e);
+      }
+    });
+  }
 
-	google.maps.event.addListener(drawingManager, 'overlaycomplete', function(event) {
+  function defer() {
+    if (++tries > 200) {  // ~20s Timeout
+      console.error('Google Maps oder PF-Widget nicht verfügbar');
+      return;
+    }
+    setTimeout(initMap, 100);
+  }
 
-		console.log('Overlay completed:', event);
-		let shapeType = event.type; // e.g., "circle"
-		let center = event.overlay.getCenter ? event.overlay.getCenter() : null;
-		let radius = event.overlay.radius ? event.overlay.getRadius() : null;
-
-		if (shapeType === 'circle') {
-			event.overlay.setOptions({
-				fillColor: '#fae275',
-				fillOpacity: 0.4,
-				strokeColor: '#bfad58',
-				strokeWeight: 2
-			});
-		}
-
-		if (center) {
-			callOnStateChange([
-				{ name: 'shapeType', value: shapeType },
-				{ name: 'centerLat', value: center.lat() },
-				{ name: 'centerLng', value: center.lng() },
-				{ name: 'radius', value: radius }
-			]);
-		} else {
-			callOnStateChange([
-				{ name: 'shapeType', value: shapeType }
-			]);
-		}
-	});
-
-	return;
-}
+  if (window.PrimeFaces && PrimeFaces.onReady) {
+    PrimeFaces.onReady(initMap);
+  } else {
+    document.addEventListener('DOMContentLoaded', initMap);
+  }
+})();

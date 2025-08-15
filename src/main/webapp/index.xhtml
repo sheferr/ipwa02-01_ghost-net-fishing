@@ -1,30 +1,30 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:h="jakarta.faces.html"
 	xmlns:p="http://primefaces.org/ui"
-	xmlns:f="http://xmlns.jcp.org/jsf/core"
-	xmlns:ui="http://java.sun.com/jsf/facelets">
+	xmlns:f="jakarta.faces.core"
+	xmlns:ui="jakarta.faces.facelets">
 
-<script defer="defer"
-	src="https://maps.google.com/maps/api/js?key=&amp;libraries=drawing&amp;callback=initMap"></script>
 <h:head>
 	<title>Ghost-Net-Fishing</title>
 
-	<h:outputStylesheet library="webjars"
-		name="primeflex/3.3.1/primeflex.min.css" />
+	<h:outputStylesheet library="webjars" name="primeflex/3.3.1/primeflex.min.css" />
 	<h:outputStylesheet library="css" name="accordion.css" />
 	<!-- Load external JavaScript -->
-	<h:outputScript library="js" name="maps.js" />
+	<h:outputScript target="body" library="js" name="maps.js" />
 
 </h:head>
 <h:body style="margin: 0; padding: 0;">
 
 	<p:splitter style="height: 100vh" widgetVar="splitter">
+	
+		<!-- Left side of the website -->
 		<p:splitterPanel size="10" styleClass="scrollable-panel">
 			<p:growl id="messages" showDetail="true" life="5000" />
 			<h:form id="listForm" styleClass="scrollable-panel">
 
+				<!-- List of circles sorted by continent  -->
 				<p:accordionPanel id="accordion"
 					value="#{fishingNetController.continents}" var="cont"
 					multiple="true" style="height:100%; width:100%; margin:0px;"
@@ -36,6 +36,7 @@
 							var="net" selection="#{fishingNetController.selectedNet}"
 							rowKey="#{net.id}" selectionMode="single">
 							<p:ajax event="rowSelect" update=":listForm:netDialog"
+								
 								oncomplete="PF('netDialogWid').show()" />
 							<p:column headerText="ID">
 								<h:outputText value="#{net.id}" />
@@ -46,8 +47,10 @@
 						</p:dataTable>
 					</p:tab>
 				</p:accordionPanel>
+				
+				<!-- Edit existing circle -->
 				<p:dialog id="netDialog" widgetVar="netDialogWid" modal="true"
-					header="Info">
+					header="Info Fischernetz #{fishingNetController.selectedNet.id}">
 					<h:panelGrid columns="2" cellpadding="5">
 						<h:outputText value="Breitengrad:" />
 						<h:outputText value="#{fishingNetController.selectedNet.latitude}" />
@@ -66,9 +69,7 @@
 							validatorMessage="Bitte nur Buchstaben verwenden."
 							required="true">
 							<f:validateRegex pattern="^[A-Za-z]+$" />
-							<p:ajax event="blur"
-								listener="#{fishingNetController.onBlurAction}" process="@this"
-								update="messages" />
+							<p:ajax event="blur" process="@this" update="messages" />
 						</p:inputText>
 
 						<h:outputText rendered="#{fishingNetController.showNext}"
@@ -77,9 +78,7 @@
 							id="mobile" value="#{fishingNetController.currentUser.mobile}"
 							validatorMessage="Bitte nur Ziffern verwenden." required="true">
 							<f:validateRegex pattern="^[0-9]+$" />
-							<p:ajax event="blur"
-								listener="#{fishingNetController.onBlurAction}" process="@this"
-								update="messages" />
+							<p:ajax event="blur" process="@this" update="messages" />
 						</p:inputText>
 					</h:panelGrid>
 
@@ -101,18 +100,11 @@
 				</p:dialog>
 			</h:form>
 		</p:splitterPanel>
+		
+		<!-- Right side of the website -->
 		<p:splitterPanel minSize="90" size="80" style="overflow: hidden;">
-			<h:form>
-				<p:remoteCommand name="callOnStateChange"
-					update=":shapeForm:shapeDialog"
-					action="#{fishingNetController.onAddingNewCircle}"
-					oncomplete="PF('shapeDialogWid').show()">
-					<f:param name="shapeType" />
-					<f:param name="centerLat" />
-					<f:param name="centerLng" />
-					<f:param name="radius" />
-				</p:remoteCommand>
-			</h:form>
+								
+			<!-- Google Maps -->
 			<p:gmap widgetVar="myMap" id="maps" disableDefaultUI="true"
 				center="51.1181141, 10.85998582" zoom="5" type="HYBRID"
 				style="width: 100%; height: 100%;"
@@ -121,6 +113,20 @@
 					listener="#{fishingNetController.circleSelected}"
 					update=":listForm:netDialog" oncomplete="PF('netDialogWid').show()" />
 			</p:gmap>
+		
+			<!-- Adding new circle -->
+			<h:form>
+				<p:remoteCommand name="callOnStateChange"
+					update=":shapeForm:shapeDialog"
+					action="#{fishingNetController.onAddingNewCircle}"
+					oncomplete="PF('shapeDialogWid').show()">
+					<f:param name="centerLat" />
+					<f:param name="centerLng" />
+					<f:param name="radius" />
+				</p:remoteCommand>
+			</h:form>
+		
+			<!-- Edit new circle -->
 			<h:form id="shapeForm">
 				<p:dialog header="Neuer Eintrag" widgetVar="shapeDialogWid"
 					id="shapeDialog" modal="true" closeOnEscape="true"
@@ -150,7 +156,12 @@
 						update=":listForm:accordion messages" />
 				</p:dialog>
 			</h:form>
+	
 		</p:splitterPanel>
 	</p:splitter>
+	
+	<script
+        src="https://maps.googleapis.com/maps/api/js?key=&amp;v=weekly&amp;libraries=drawing">
+    </script>
 </h:body>
 </html>

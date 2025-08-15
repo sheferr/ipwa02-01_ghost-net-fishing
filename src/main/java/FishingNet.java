@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 
 @Entity
 public class FishingNet implements Serializable {
+	private static final long serialVersionUID = 1L;
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int ID;

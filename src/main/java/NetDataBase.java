@@ -1,9 +1,5 @@
 import java.util.List;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.context.ConversationScoped;
-import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.context.RequestScoped;
-import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
@@ -58,6 +54,16 @@ public class NetDataBase {
 	public void addUser(User user)
 	{
 		entityManager.persist(user);
+	}
+	
+	public User findUser(User user) 
+	{
+	    TypedQuery<User> q = entityManager
+	    		.createQuery("SELECT u FROM User u WHERE u.mobile = :mobile AND u.name = :name", User.class)
+	            .setParameter("mobile", user.getMobile())
+	            .setParameter("name", user.getName());
+		List<User> users = q.getResultList();
+		return users.isEmpty() ? null : users.get(0);
 	}
 	
 	public User findUserByMobile(String mobile) 

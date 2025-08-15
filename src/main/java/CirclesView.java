@@ -5,7 +5,7 @@ import org.primefaces.model.map.*;
 import jakarta.annotation.PostConstruct;
 
 public class CirclesView implements Serializable {
-
+	private static final long serialVersionUID = 1L;
 	private MapModel<Long> circleModel = new DefaultMapModel<Long>();
 
 	@PostConstruct
